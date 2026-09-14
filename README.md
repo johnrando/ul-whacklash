@@ -216,7 +216,7 @@ That restages `dist/WhackLash/`, ready to copy into `Mods/`. To also build the r
 dotnet build src/WhackLash/WhackLash.csproj -c Release -t:Package
 ```
 
-That writes `release/WhackLash-<version>-<date>.zip`, taking the version from `ModInfo.xml`.
+That writes `release/WhackLash-v<version>-<date>.zip`, taking the version from `ModInfo.xml`.
 Neither `dist/` nor `release/` is tracked — the zip is published as a Release instead.
 
 ## License
