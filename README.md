@@ -1,0 +1,222 @@
+# WhackLash
+
+A 7 Days To Die mod. Keep hitting the same enemy and it starts to give.
+
+Every enemy you hit gets a **focus meter**. Each hit you land adds to it and it drains steadily
+from the moment of the last hit. While it is up, your hits on that enemy are worth more: they do
+more damage, build towards a knockdown faster, dismember more often, and a knockdown can become a
+full ragdoll. Five hits in a row are worth more than five hits over a minute — you are working a
+priority target over, and the game now notices.
+
+The game has a meter of its own that runs the other way. Vanilla's **pain meter** fills as a zombie
+takes hits and, once full enough, lets it attack straight through yours and shrug off the slow a
+flinch would cause — for nearly every zombie that happens on the second hit. WhackLash leaves that
+alone until your focus meter reaches the **break point**, 3 points by default. Below it the zombie
+gets tougher exactly as in vanilla, so the hits that build the meter are landed at risk. At it the
+zombie breaks: its pain meter is held down, every hit flinches it for the full animation and it
+cannot attack through, for as long as you keep the meter up there. With bare fists at the defaults
+that is: hit one flinches, hits two and three the zombie swings back through, hit four breaks it,
+and about four seconds without a hit lets it recover.
+
+## Installing
+
+Download the zip from Releases and extract it into the game's `Mods/`. The mod folder is the root
+of the archive, so it lands as:
+
+```
+Mods/WhackLash/
+├── ModInfo.xml
+└── WhackLash.dll
+```
+
+Load order does not matter, and nothing needs building. In multiplayer, install it on the server
+and on every client — each machine works out its own hits.
+
+## How the meter works
+
+A hit adds points by what landed it:
+
+| Hit | Points |
+|---|---|
+| melee swing (and a thrown spear, which carries the same item) | 1 |
+| arrow, bolt, grenade, molotov, anything thrown | 0.5 |
+| bullet, launcher, explosive | 0.25 |
+| turret, drone, trap, vehicle, burn, bleed, another zombie | 0 — earns nothing, builds nothing |
+
+The meter holds at most 5 points and drains 0.5 a second, so a full meter is gone ten seconds
+after the last hit. Every bonus is a percentage **per point**, read off the meter as it stood
+*before* the hit, so the first hit of a chain earns nothing and every hit after it earns off the
+ones before.
+
+Worked example: three quick machete hits. The first lands plain and puts the meter at 1. The
+second, at 1 point, does +5% damage, builds +20% more towards a knockdown, and rolls dismember at
+1.15x. The third, at 2 points, is +10%, +40%, 1.3x, and if it knocks the zombie down there is a 30%
+chance that knockdown is a ragdoll. Stop for ten seconds and you are back to the first hit.
+
+At a full meter the defaults come to double knockdown build-up, 1.75x dismember chance, 1.25x
+damage and a 75% ragdoll.
+
+**A head dismember is a kill.** The dismember bonus multiplies the weapon's own dismember chance,
+and the game treats a decapitation as fatal, so on a weapon with a real head-dismember chance this
+bonus is the strong one. `wl bonus` turns it down or off.
+
+**Who takes part.** Zombies by default — everything the game flags as a zombie, which includes
+zombie dogs, vultures, and Undead Legacy's own, plus bandits. Hostile animals — bears, wolves,
+boars, mountain lions — are off by default and switched on with `wl animals on`. A bear you can
+break so it stops attacking through your hits is a different animal, so that one is your call.
+
+## Console commands
+
+`wl` prints the menu and changes nothing — `whacklash` is an alias. Every line names the command
+that changes it and says what it is for, so the menu is also the reference:
+
+```
+WhackLash is ON
+  wl on|off               : [ >on< | off ]   - build a focus meter on enemies you keep hitting
+  wl break {points}|off   : zombie stops attacking through at 3 points
+  wl zombies on|off       : [ >on< | off ]   - zombies, zombie dogs and vultures build the meter
+  wl animals on|off       : [ on | >off< ]   - hostile animals build the meter too
+  wl weights {m} {a} {g}  : 1 melee / 0.5 archery+thrown / 0.25 gun+launcher per hit
+  wl cap {points}         : meter tops out at 5 points
+  wl decay {per sec}      : meter drains 0.5 points per second
+  wl bonus {s} {d} {h} {r}: per point +20% knockdown, +15% dismember, +5% damage, 15% ragdoll on knockdown
+  wl door {pct} {min}     : a slammed door floors a zombie 20% per point, from 1 point up
+  wl flavor ds            : [ >on< | off ]   - DoorSlammer: a slammed door can floor a zombie you have been working on
+```
+
+`wl on` and `wl off` are the master switch — with it off every hook returns immediately: no meter,
+no bonuses, and the vanilla pain meter runs as normal. They say which state you want rather than
+toggling, so the command reads the same whichever state you were in and repeating it is harmless.
+`wl zombies` and `wl animals` work the same way.
+
+`wl break {points}` sets the break point: the meter points a zombie needs before its pain meter is
+held down and it stops attacking through your hits. 3 by default; 0 breaks it from the first hit,
+which is a stun-lock, so use that knowingly. `wl break off` leaves the vanilla pain meter alone
+throughout and keeps only the bonuses.
+
+`wl bonus` takes the four payoffs as percentages per meter point: knockdown build-up (as a share of
+the hit's damage), dismember chance, damage, and the chance a knockdown becomes a ragdoll. 0
+switches any one of them off. A setter called with no arguments prints its usage and current
+value. **Changes are saved** — see [Settings file](#settings-file).
+
+`wl info` prints the same block with the patch state and the counters added. The key line is
+`hits`: the startup log only proves the hooks were installed, that number proves hits are reaching
+them. `wl reset` zeroes the counters; live meters are left alone.
+
+## DoorSlammer
+
+With [DoorSlammer](../ul-doorslammer) installed, a door slammed on a zombie you have been working
+on can knock it down. The door reads the zombie's meter as it stood before the slam and rolls
+`wl door`'s percentage per point — 20% per point from 1 point up by default, so a zombie you have
+hit four times goes down four slams in five. The ragdoll roll applies to that knockdown too. The
+slam then counts as one melee hit on the meter. A knockdown deals no damage and is credited to
+nobody.
+
+`wl flavor` lists the interactions, one switch per mod, and changes nothing. `wl flavor ds`
+toggles the DoorSlammer pair; `wl flavor on` and `wl flavor off` set them all. Each pair is
+switched **on both sides**, and toggling it in either one sets both: `wl flavor ds` and `ds flavor
+wl` are the same switch. A mod this build does not know about is let through until you switch it
+off, and gets a line of its own once it has been seen.
+
+## Defaults
+
+All settable in-game, and all written back to the settings file as soon as you set them. These are
+what a first run starts from:
+
+| Setting | Default |
+|---|---|
+| break point (pain meter held down from) | 3 points |
+| zombies take part | on |
+| hostile animals take part | off |
+| points per hit: melee / archery+thrown / gun+launcher | 1 / 0.5 / 0.25 |
+| meter cap | 5 points |
+| decay | 0.5 points per second |
+| knockdown build-up bonus | +20% per point |
+| dismember chance bonus | +15% per point |
+| damage bonus | +5% per point |
+| ragdoll on knockdown | 15% per point |
+| door knockdown (DoorSlammer) | 20% per point, from 1 point |
+| mod interactions | on |
+
+## Settings file
+
+Every setting survives a restart. A change made with `wl` is written straight out to:
+
+```
+%APPDATA%/7DaysToDie/WhackLash/settings.txt
+```
+
+— the game's own user data folder, next to `Saves`, rather than `Mods/WhackLash/`, so updating
+the mod does not take your settings with it. `wl info` prints the full path and whether the last
+read or write worked.
+
+It is plain `key = value` text, one line per setting, each naming the command that sets it:
+
+```
+enabled             = on       # wl on|off
+break               = 3        # wl break {points}|off - meter points before the zombie stops attacking through; off leaves the vanilla pain meter alone
+targets.zombies     = on       # wl zombies on|off
+targets.animals     = off      # wl animals on|off
+weight.melee        = 1        # wl weights {melee} {archery} {gun}
+weight.archery      = 0.5      # wl weights {melee} {archery} {gun} - bows, crossbows, thrown
+weight.gun          = 0.25     # wl weights {melee} {archery} {gun} - guns, launchers, explosives
+cap                 = 5        # wl cap {points}
+decay               = 0.5      # wl decay {points per second}
+bonus.stun          = 20       # wl bonus {stun} {dismember} {damage} {ragdoll}
+bonus.dismember     = 15       # wl bonus {stun} {dismember} {damage} {ragdoll}
+bonus.damage        = 5        # wl bonus {stun} {dismember} {damage} {ragdoll}
+bonus.ragdoll       = 15       # wl bonus {stun} {dismember} {damage} {ragdoll}
+door.percent        = 20       # wl door {pct} {min}
+door.min            = 1        # wl door {pct} {min}
+flavor.doorslammer  = on       # wl flavor ds
+```
+
+Edit it by hand with the game closed — it is rewritten whenever a `wl` command changes something.
+A line that will not parse is logged and ignored rather than fatal, and deleting the file brings
+back the defaults above (which live in `Settings.cs`).
+
+## Multiplayer
+
+Each machine works out its own hits — the damage, the knockdown, the dismember roll — and sends
+the result to the server, and each keeps its own copy of every meter, fed by the same damage
+traffic the server sees. So the settings on the machine that swung the weapon are the ones that
+apply to that swing. Keep them the same everywhere. The console command runs on the server; on a
+client it changes the server's settings, not your own, so edit the settings file for a client.
+
+## Undead Legacy
+
+**Not required** — the mod works on a plain install, and is built to sit alongside UL without
+modifying anything of UL's. UL replaces the method that plays a hit on a zombie with a copy of its
+own, but keeps the pain meter and knockdown maths intact, and this mod hooks around that copy
+rather than into it. Tested against **UL 2.7.32**.
+
+## Limitations
+
+- A **thrown spear** counts as melee, not archery: it carries the same item as a held one and the
+  game gives no other handle.
+- The **vanilla pain meter** is held just below the point where it works for the zombie rather
+  than zeroed, so a mod that displays it (PainMeter) still shows it moving.
+- A **sleeping zombie** builds the meter but gets no knockdown bonus until it is up — the game
+  computes no knockdown for sleepers, and neither does this.
+
+## Building
+
+Requires the .NET SDK; there are no NuGet dependencies. The mod builds in place inside the game
+install, against the game's own assemblies.
+
+```
+dotnet build src/WhackLash/WhackLash.csproj -c Release
+```
+
+That restages `dist/WhackLash/`, ready to copy into `Mods/`. To also build the release archive:
+
+```
+dotnet build src/WhackLash/WhackLash.csproj -c Release -t:Package
+```
+
+That writes `release/WhackLash-<version>-<date>.zip`, taking the version from `ModInfo.xml`.
+Neither `dist/` nor `release/` is tracked — the zip is published as a Release instead.
+
+## License
+
+MIT — see `LICENSE`.
