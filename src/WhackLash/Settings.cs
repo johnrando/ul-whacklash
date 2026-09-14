@@ -46,7 +46,7 @@ namespace WhackLash
 		internal static float Cap = 5f;
 
 		/// <summary>Points the meter loses per second, from the moment of the last hit.</summary>
-		internal static float DecayPerSecond = 0.5f;
+		internal static float DecayPerSecond = 0.2f;
 
 		/// <summary>Extra knockdown build-up per hit, percent of the hit's damage per meter point.</summary>
 		internal static float StunPercent = 20f;

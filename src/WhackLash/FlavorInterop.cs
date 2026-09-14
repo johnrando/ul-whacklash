@@ -9,7 +9,8 @@ namespace WhackLash
 	/// absent - so those two signatures are the whole interface. Changing one silently switches that
 	/// half of the interaction off. Game types and strings only. The shape is identical to
 	/// Stumblr's and FletchWounds' <c>FlavorInterop</c>, which is how DoorSlammer finds all three
-	/// with one binder.
+	/// with one binder. The four readout methods at the bottom are a second, read-only contract
+	/// for PainMeter's HUD.
 	/// </summary>
 	public static class FlavorInterop
 	{
@@ -66,6 +67,35 @@ namespace WhackLash
 		{
 			FlavorSwitches.Set(_partner, _on);
 			Config.Save();
+		}
+
+		// ---- Readout, PUBLISHED CONTRACT like the two above. PainMeter binds these four by
+		// reflection to draw the focus meter under its pain bar. Primitives only, so a
+		// Delegate.CreateDelegate on the far side is all it takes. Each reads live: 'wl' changes
+		// the break point and cap at runtime, and the caller draws every frame.
+
+		/// <summary>The enemy's focus meter as it stands now, 0 when the mod is off or it has none.</summary>
+		public static float FocusPoints(int _entityId)
+		{
+			return Settings.Enabled ? FocusMeter.Get(_entityId) : 0f;
+		}
+
+		/// <summary>Points at which the pain clamp engages; below zero when the clamp is switched off.</summary>
+		public static float FocusBreak()
+		{
+			return Settings.Enabled && Settings.NeutralizePainMeter ? Settings.BreakPoints : -1f;
+		}
+
+		/// <summary>The most the meter holds.</summary>
+		public static float FocusCap()
+		{
+			return Settings.Cap;
+		}
+
+		/// <summary>The damage bonus the next hit on this enemy gets, in percent.</summary>
+		public static float DamageBonusPercent(int _entityId)
+		{
+			return Settings.Enabled ? FocusMeter.Get(_entityId) * Settings.DamagePercent : 0f;
 		}
 
 		/// <summary>The <c>wl door</c> menu line.</summary>

@@ -43,15 +43,15 @@ A hit adds points by what landed it:
 | bullet, launcher, explosive | 0.25 |
 | turret, drone, trap, vehicle, burn, bleed, another zombie | 0 — earns nothing, builds nothing |
 
-The meter holds at most 5 points and drains 0.5 a second, so a full meter is gone ten seconds
-after the last hit. Every bonus is a percentage **per point**, read off the meter as it stood
+The meter holds at most 5 points and drains 0.2 a second, the same rate as the game's own pain
+meter, so a full meter is gone 25 seconds after the last hit. Every bonus is a percentage **per point**, read off the meter as it stood
 *before* the hit, so the first hit of a chain earns nothing and every hit after it earns off the
 ones before.
 
 Worked example: three quick machete hits. The first lands plain and puts the meter at 1. The
 second, at 1 point, does +5% damage, builds +20% more towards a knockdown, and rolls dismember at
 1.15x. The third, at 2 points, is +10%, +40%, 1.3x, and if it knocks the zombie down there is a 30%
-chance that knockdown is a ragdoll. Stop for ten seconds and you are back to the first hit.
+chance that knockdown is a ragdoll. Stop for fifteen seconds and you are back to the first hit.
 
 At a full meter the defaults come to double knockdown build-up, 1.75x dismember chance, 1.25x
 damage and a 75% ragdoll.
@@ -78,7 +78,7 @@ WhackLash is ON
   wl animals on|off       : [ on | >off< ]   - hostile animals build the meter too
   wl weights {m} {a} {g}  : 1 melee / 0.5 archery+thrown / 0.25 gun+launcher per hit
   wl cap {points}         : meter tops out at 5 points
-  wl decay {per sec}      : meter drains 0.5 points per second
+  wl decay {per sec}      : meter drains 0.2 points per second
   wl bonus {s} {d} {h} {r}: per point +20% knockdown, +15% dismember, +5% damage, 15% ragdoll on knockdown
   wl door {pct} {min}     : a slammed door floors a zombie 20% per point, from 1 point up
   wl flavor ds            : [ >on< | off ]   - DoorSlammer: a slammed door can floor a zombie you have been working on
@@ -130,7 +130,7 @@ what a first run starts from:
 | hostile animals take part | off |
 | points per hit: melee / archery+thrown / gun+launcher | 1 / 0.5 / 0.25 |
 | meter cap | 5 points |
-| decay | 0.5 points per second |
+| decay | 0.2 points per second |
 | knockdown build-up bonus | +20% per point |
 | dismember chance bonus | +15% per point |
 | damage bonus | +5% per point |
@@ -161,7 +161,7 @@ weight.melee        = 1        # wl weights {melee} {archery} {gun}
 weight.archery      = 0.5      # wl weights {melee} {archery} {gun} - bows, crossbows, thrown
 weight.gun          = 0.25     # wl weights {melee} {archery} {gun} - guns, launchers, explosives
 cap                 = 5        # wl cap {points}
-decay               = 0.5      # wl decay {points per second}
+decay               = 0.2      # wl decay {points per second}
 bonus.stun          = 20       # wl bonus {stun} {dismember} {damage} {ragdoll}
 bonus.dismember     = 15       # wl bonus {stun} {dismember} {damage} {ragdoll}
 bonus.damage        = 5        # wl bonus {stun} {dismember} {damage} {ragdoll}
@@ -195,7 +195,9 @@ rather than into it. Tested against **UL 2.7.32**.
 - A **thrown spear** counts as melee, not archery: it carries the same item as a held one and the
   game gives no other handle.
 - The **vanilla pain meter** is held just below the point where it works for the zombie rather
-  than zeroed, so a mod that displays it (PainMeter) still shows it moving.
+  than zeroed, so a mod that displays it (PainMeter) still shows it moving. PainMeter 0.0.0.2 and
+  up also draws this meter under its bar: a pip per point, the break point framed, a locked tint
+  once the zombie is broken, and the damage bonus beside it.
 - A **sleeping zombie** builds the meter but gets no knockdown bonus until it is up — the game
   computes no knockdown for sleepers, and neither does this.
 
